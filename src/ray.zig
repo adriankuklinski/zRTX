@@ -27,8 +27,8 @@ pub const Ray = struct{
         };
     }
 
-    pub fn getOrigin() Point3 { return Self.origin; }
-    pub fn getDir() Vec3 { return Self.dir; }
+    pub fn getOrigin(self: Self) Point3 { return self.origin; }
+    pub fn getDir(self: Self) Vec3 { return self.dir; }
 
     pub fn at(self: Self, t: f64) Point3 {
         return self.origin.add(self.dir.scale(t));
