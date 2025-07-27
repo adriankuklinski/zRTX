@@ -1,46 +1,31 @@
-//! By convention, main.zig is where your main function lives in the case that
-//! you are building an executable. If you are making a library, the convention
-//! is to delete this file and start with root.zig instead.
+const std = @import("std");
 
 pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
+    const image_width: i16 = 256;
+    const image_height: i16 = 256;
 
-    // stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
     const stdout_file = std.io.getStdOut().writer();
     var bw = std.io.bufferedWriter(stdout_file);
     const stdout = bw.writer();
 
-    try stdout.print("Run `zig build test` to run the tests.\n", .{});
+    try stdout.print("P3\n{d} {d}\n255\n", .{image_width, image_height});
 
-    try bw.flush(); // Don't forget to flush!
-}
-
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // Try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
-}
-
-test "use other module" {
-    try std.testing.expectEqual(@as(i32, 150), lib.add(100, 50));
-}
-
-test "fuzz example" {
-    const Context = struct {
-        fn testOne(context: @This(), input: []const u8) anyerror!void {
-            _ = context;
-            // Try passing `--fuzz` to `zig build test` and see if it manages to fail this test case!
-            try std.testing.expect(!std.mem.eql(u8, "canyoufindme", input));
+    for (0..image_height) |row| {
+        for (0..image_width) |col| {
+            const row_f: f16 = @floatFromInt(row);
+            const col_f: f16 = @floatFromInt(col);
+            const width_f: f16 = @floatFromInt(image_width - 1);
+            const height_f: f16 = @floatFromInt(image_height - 1);
+            
+            const r: f16 = col_f / width_f;
+            const g: f16 = row_f / height_f;
+            const b: f16 = 0.0;
+            
+            const ir: i16 = @intFromFloat(@round(255.999 * r));
+            const ig: i16 = @intFromFloat(@round(255.999 * g));
+            const ib: i16 = @intFromFloat(@round(255.999 * b));
+            
+            try stdout.print("{d} {d} {d}\n", .{ir, ig, ib});
         }
-    };
-    try std.testing.fuzz(Context{}, Context.testOne, .{});
+    }
 }
-
-const std = @import("std");
-
-/// This imports the separate module containing `root.zig`. Take a look in `build.zig` for details.
-const lib = @import("zRTX_lib");
