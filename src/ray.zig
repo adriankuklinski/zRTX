@@ -1,5 +1,5 @@
 const std = @import("std");
-const Vec3 = @import("./vec3").Vec3;
+const Vec3 = @import("./vec3.zig").Vec3;
 const Point3 = Vec3;
 
 pub const RayResult = struct{
