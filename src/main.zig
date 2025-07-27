@@ -5,18 +5,24 @@ const Point = Vec3;
 const writeColor = @import("./color.zig").writeColor;
 const Ray = @import("./ray.zig").Ray;
 
-fn hitSphere(center: Point, radius: f32, ray: Ray) bool {
-    const oc = center.sub(ray.getOrigin());
-    const a = ray.getDir().dot(ray.getDir());
-    const b = -2.0 * ray.getDir().dot(oc);
-    const c = oc.dot(oc) - radius * radius;
-    const discriminant = b * b - 4 * a * c;
-    return discriminant >= 0;
+fn hitSphere(center: Point, radius: f64, ray: Ray) f64 {
+    const oc: Vec3 = center.sub(ray.getOrigin());
+    const a: f64 = ray.getDir().lengthSquared();
+    const h: f64 = ray.getDir().dot(oc);
+    const c: f64 = oc.lengthSquared() - radius * radius;
+    const discriminant = h * h -  a * c;
+    if (discriminant < 0) {
+        return -1.0;
+    } else {
+        return (h - @sqrt(discriminant)) / a;
+    }
 }
 
 fn rayColor(ray: Ray) Color {
-    if (hitSphere(Point.new(0, 0, -1), 0.5, ray)) {
-        return Color.new(1, 0, 0);
+    const t = hitSphere(Point.new(0, 0, -1), 0.5, ray);
+    if (t > 0.0) {
+        const n: Vec3 = ray.at(t).sub(Vec3.new(0,0,-1));
+        return Vec3.new(n.x() + 1, n.y() + 1, n.z() + 1).scale(0.5);
     }
 
     const unit_direction = ray.getDir().unitVector();
