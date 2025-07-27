@@ -11,6 +11,7 @@ pub fn main() !void {
     try stdout.print("P3\n{d} {d}\n255\n", .{image_width, image_height});
 
     for (0..image_height) |row| {
+        std.log.info("\rScanlines remaining: {d} ", .{image_height - row});
         for (0..image_width) |col| {
             const row_f: f16 = @floatFromInt(row);
             const col_f: f16 = @floatFromInt(col);
@@ -28,4 +29,5 @@ pub fn main() !void {
             try stdout.print("{d} {d} {d}\n", .{ir, ig, ib});
         }
     }
+    std.log.info("\rDone.\n", .{});
 }
