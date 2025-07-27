@@ -29,5 +29,7 @@ pub fn main() !void {
             try stdout.print("{d} {d} {d}\n", .{ir, ig, ib});
         }
     }
+
     std.log.info("\rDone.\n", .{});
+    try bw.flush();
 }
