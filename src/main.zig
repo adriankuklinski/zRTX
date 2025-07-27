@@ -5,8 +5,21 @@ const Point = Vec3;
 const writeColor = @import("./color.zig").writeColor;
 const Ray = @import("./ray.zig").Ray;
 
-fn rayColor(r: Ray) Color {
-    const unit_direction = r.getDir().unitVector();
+fn hitSphere(center: Point, radius: f32, ray: Ray) bool {
+    const oc = center.sub(ray.getOrigin());
+    const a = ray.getDir().dot(ray.getDir());
+    const b = -2.0 * ray.getDir().dot(oc);
+    const c = oc.dot(oc) - radius * radius;
+    const discriminant = b * b - 4 * a * c;
+    return discriminant >= 0;
+}
+
+fn rayColor(ray: Ray) Color {
+    if (hitSphere(Point.new(0, 0, -1), 0.5, ray)) {
+        return Color.new(1, 0, 0);
+    }
+
+    const unit_direction = ray.getDir().unitVector();
     const a = 0.5 * (unit_direction.y() + 1.0);
     return Color.new(1.0, 1.0, 1.0)
         .scale(1.0 - a)
