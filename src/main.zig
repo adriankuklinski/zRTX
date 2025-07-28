@@ -1,11 +1,14 @@
 const std = @import("std");
 const Vec3 = @import("./vec3.zig").Vec3;
 const Color = @import("./color.zig").Color;
-const Point = Vec3;
+const Point3 = Vec3;
 const writeColor = @import("./color.zig").writeColor;
 const Ray = @import("./ray.zig").Ray;
+const Hittable = @import("./hittable.zig").Hittable;
+const HitRecord = @import("./hittable.zig").HitRecord;
+const HittableList = @import("./hittable_list.zig").HittableList;
 
-fn hitSphere(center: Point, radius: f64, ray: Ray) f64 {
+fn hitSphere(center: Point3, radius: f64, ray: Ray) f64 {
     const oc: Vec3 = center.sub(ray.getOrigin());
     const a: f64 = ray.getDir().lengthSquared();
     const h: f64 = ray.getDir().dot(oc);
@@ -18,32 +21,40 @@ fn hitSphere(center: Point, radius: f64, ray: Ray) f64 {
     }
 }
 
-fn rayColor(ray: Ray) Color {
-    const t = hitSphere(Point.new(0, 0, -1), 0.5, ray);
-    if (t > 0.0) {
-        const n: Vec3 = ray.at(t).sub(Vec3.new(0,0,-1));
-        return Vec3.new(n.x() + 1, n.y() + 1, n.z() + 1).scale(0.5);
+fn rayColor(r: Ray, world: HittableList) Color {
+    var rec: HitRecord = undefined;
+    if (world.hit(r, 0, std.math.inf(f64), &rec)) {
+        return rec.normal.add(Color.new(1, 1, 1)).scale(0.5);
     }
-
-    const unit_direction = ray.getDir().unitVector();
+    
+    const unit_direction = r.getDir().unitVector();
     const a = 0.5 * (unit_direction.y() + 1.0);
-    return Color.new(1.0, 1.0, 1.0)
-        .scale(1.0 - a)
+    return Color.new(1.0, 1.0, 1.0).scale(1.0 - a)
         .add(Color.new(0.5, 0.7, 1.0).scale(a));
 }
 
 pub fn main() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
     const aspect_ratio: f64 = 16.0 / 9.0;
     const image_width: i16 = 400;
     var image_height: i16 = @intFromFloat(image_width / aspect_ratio);
     image_height = if (image_height < 1) 1 else image_height;
+
+    var world = HittableList.init(allocator);
+    defer world.deinit();
+
+    try world.addSphere(Point3.new(0, 0, -1), 0.5);
+    try world.addSphere(Point3.new(0, -100.5, -1), 100);
 
     const focal_length: f64 = 1.0;
     const image_width_f: f64 = @floatFromInt(image_width);
     const image_height_f: f64 = @floatFromInt(image_height);
     const viewport_height: f64 = 2.0;
     const viewport_width: f64 = viewport_height * (image_width_f / image_height_f);
-    const camera_center: Point = Point.init();
+    const camera_center: Point3 = Point3.init();
 
     const viewport_u: Vec3 = Vec3.new(viewport_width, 0, 0);
     const viewport_v: Vec3 = Vec3.new(0, -viewport_height, 0);
@@ -73,9 +84,11 @@ pub fn main() !void {
             const pixel_center = pixel00_loc
                 .add(pixel_delta_u.scale(@as(f64, @floatFromInt(col))))
                 .add(pixel_delta_v.scale(@as(f64, @floatFromInt(row))));
+
             const ray_direction = pixel_center.sub(camera_center);
             const r = Ray.new(camera_center, ray_direction);
-            const pixel_color = rayColor(r);
+
+            const pixel_color = rayColor(r, world);
             try writeColor(stdout, pixel_color);
         }
     }
