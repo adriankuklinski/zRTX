@@ -123,8 +123,6 @@ pub const Vec3 = struct {
     }
 };
 
-pub const Point3 = Vec3;
-
 pub fn add(u: Vec3, v: Vec3) Vec3 {
     return u.add(v);
 }
