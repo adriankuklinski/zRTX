@@ -7,6 +7,7 @@ const Ray = @import("./ray.zig").Ray;
 const Hittable = @import("./hittable.zig").Hittable;
 const HitRecord = @import("./hittable.zig").HitRecord;
 const HittableList = @import("./hittable_list.zig").HittableList;
+const Interval = @import("./interval.zig").Interval;
 
 fn hitSphere(center: Point3, radius: f64, ray: Ray) f64 {
     const oc: Vec3 = center.sub(ray.getOrigin());
@@ -23,7 +24,8 @@ fn hitSphere(center: Point3, radius: f64, ray: Ray) f64 {
 
 fn rayColor(r: Ray, world: HittableList) Color {
     var rec: HitRecord = undefined;
-    if (world.hit(r, 0, std.math.inf(f64), &rec)) {
+    const ray_range = Interval.new(0, std.math.inf(f64));
+    if (world.hit(r, ray_range, &rec)) {
         return rec.normal.add(Color.new(1, 1, 1)).scale(0.5);
     }
     

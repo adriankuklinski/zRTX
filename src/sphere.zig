@@ -2,6 +2,7 @@ const Vec3 = @import("./vec3.zig").Vec3;
 const Point3 = Vec3;
 const Ray = @import("./ray.zig").Ray;
 const HitRecord = @import("./hittable.zig").HitRecord;
+const Interval = @import("interval.zig").Interval;
 
 pub const Sphere = struct {
     center: Point3,
@@ -14,7 +15,7 @@ pub const Sphere = struct {
         };
     }
     
-    pub fn hit(self: Sphere, r: Ray, ray_tmin: f64, ray_tmax: f64, rec: *HitRecord) bool {
+    pub fn hit(self: Sphere, r: Ray, ray_t: Interval, rec: *HitRecord) bool {
         const oc = self.center.sub(r.getOrigin());
         const a = r.getDir().lengthSquared();
         const h = r.getDir().dot(oc);
@@ -26,9 +27,9 @@ pub const Sphere = struct {
         const sqrtd = @sqrt(discriminant);
         
         var root = (h - sqrtd) / a;
-        if (root <= ray_tmin or ray_tmax <= root) {
+        if (!ray_t.surrounds(root)) {
             root = (h + sqrtd) / a;
-            if (root <= ray_tmin or ray_tmax <= root) return false;
+            if (!ray_t.surrounds(root)) return false;
         }
         
         rec.t = root;

@@ -3,6 +3,7 @@ const Vec3 = @import("vec3.zig").Vec3;
 const Point3 = Vec3;
 const Ray = @import("ray.zig").Ray;
 const Sphere = @import("sphere.zig").Sphere;
+const Interval = @import("interval.zig").Interval;
 
 pub const HitRecord = struct {
     const Self = @This();
@@ -21,9 +22,9 @@ pub const HitRecord = struct {
 pub const Hittable = union(enum) {
     sphere: Sphere,
     
-    pub fn hit(self: Hittable, r: Ray, ray_tmin: f64, ray_tmax: f64, rec: *HitRecord) bool {
+    pub fn hit(self: Hittable, r: Ray, ray_t: Interval, rec: *HitRecord) bool {
         return switch (self) {
-            .sphere => |sphere| sphere.hit(r, ray_tmin, ray_tmax, rec),
+            .sphere => |sphere| sphere.hit(r, ray_t, rec),
         };
     }
     
@@ -32,7 +33,6 @@ pub const Hittable = union(enum) {
     }
 };
 
-
-pub fn hit(hittable: anytype, r: Ray, ray_tmin: f64, ray_tmax: f64, rec: *HitRecord) bool {
-    return hittable.hit(r, ray_tmin, ray_tmax, rec);
+pub fn hit(hittable: anytype, r: Ray, ray_t: Interval, rec: *HitRecord) bool {
+    return hittable.hit(r, ray_t, rec);
 }

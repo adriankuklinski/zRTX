@@ -4,6 +4,7 @@ const HitRecord = @import("./hittable.zig").HitRecord;
 const Ray = @import("./ray.zig").Ray;
 const Vec3 = @import("./vec3.zig").Vec3;
 const Point3 = Vec3;
+const Interval = @import("interval.zig").Interval;
 
 pub const HittableList = struct {
     const Self = @This();
@@ -36,13 +37,14 @@ pub const HittableList = struct {
         try self.objects.append(object);
     }
     
-    pub fn hit(self: Self, r: Ray, ray_tmin: f64, ray_tmax: f64, rec: *HitRecord) bool {
+    pub fn hit(self: Self, r: Ray, ray_t: Interval, rec: *HitRecord) bool {
         var temp_rec: HitRecord = undefined;
         var hit_anything = false;
-        var closest_so_far = ray_tmax;
+        var closest_so_far = ray_t.max;
         
         for (self.objects.items) |object| {
-            if (object.hit(r, ray_tmin, closest_so_far, &temp_rec)) {
+            const current_interval = Interval.new(ray_t.min, closest_so_far);
+            if (object.hit(r, current_interval, &temp_rec)) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
                 rec.* = temp_rec;
