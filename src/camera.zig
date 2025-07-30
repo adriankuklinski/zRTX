@@ -1,5 +1,6 @@
 const std = @import("std");
 const Vec3 = @import("vec3.zig").Vec3;
+const randomOnHemesphere = @import("vec3.zig").randomOnHemisphere;
 const Point3 = Vec3;
 const Color = Vec3;
 const Ray = @import("ray.zig").Ray;
@@ -119,12 +120,11 @@ pub const Camera = struct {
     }
     
     fn rayColor(self: Self, r: Ray, world: HittableList) Color {
-        _ = self;
-        
         var rec: HitRecord = undefined;
         const ray_range = Interval.new(0, std.math.inf(f64));
         if (world.hit(r, ray_range, &rec)) {
-            return rec.normal.add(Color.new(1, 1, 1)).scale(0.5);
+            const direction: Vec3 = randomOnHemesphere(rec.normal);
+            return self.rayColor(Ray.new(rec.p, direction), world).scale(0.5);
         }
         
         const unit_direction = r.getDir().unitVector();

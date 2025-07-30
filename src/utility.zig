@@ -12,4 +12,8 @@ pub const Utility = struct{
     pub fn randomDouble(rng: *std.Random.DefaultPrng) f64 {
         return rng.random().float(f64);
     }
+
+    pub fn randomDoubleRange(rng: *std.Random.DefaultPrng, min: f64, max: f64) f64 {
+        return min + (max-min) * randomDouble(rng);
+    }
 };

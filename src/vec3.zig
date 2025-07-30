@@ -1,4 +1,5 @@
 const std = @import("std");
+const Utility = @import("./utility.zig").Utility;
 
 pub const Vec3 = struct {
     const Self = @This();
@@ -110,7 +111,17 @@ pub const Vec3 = struct {
     pub fn unitVector(self: Self) Self {
         return self.divide(self.length());
     }
-    
+
+    pub fn randomUnitVector(self: Self) Self {
+        while (true) {
+            const p = self.randomRange(-1, 1);
+            const lensq = p.lengthSquared();
+            if (1e-160 < lensq and lensq <= 1) {
+                return p.divide(@sqrt(lensq));
+            }
+        }
+    }
+
     pub fn format(
         self: Self,
         comptime fmt: []const u8,
@@ -157,6 +168,39 @@ pub fn cross(u: Vec3, v: Vec3) Vec3 {
 
 pub fn unitVector(v: Vec3) Vec3 {
     return v.unitVector();
+}
+
+pub fn randomUnitVector() Vec3 {
+    while (true) {
+        const p = randomRange(-1, 1);
+        const lensq = p.lengthSquared();
+        if (1e-160 < lensq and lensq <= 1) {
+            return p.divide(@sqrt(lensq));
+        }
+    }
+}
+
+pub fn random() Vec3 {
+    var rng = Utility.createRng();
+    return Vec3.new(Utility.randomDouble(   &rng), Utility.randomDouble(&rng), Utility.randomDouble(&rng));
+}
+
+pub fn randomRange(min: f64, max: f64) Vec3 {
+    var rng = Utility.createRng();
+    return Vec3.new(
+        Utility.randomDoubleRange(&rng, min, max),
+        Utility.randomDoubleRange(&rng, min, max), 
+        Utility.randomDoubleRange(&rng, min, max)
+    );
+}
+
+pub fn randomOnHemisphere(normal: Vec3) Vec3 {
+    const on_unit_sphere = randomUnitVector();
+    if (on_unit_sphere.dot(normal) > 0.0) {
+        return on_unit_sphere;
+    } else {
+        return on_unit_sphere.negate();
+    }
 }
 
 test "Vec3 basic operations" {
