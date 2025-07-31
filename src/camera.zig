@@ -127,7 +127,7 @@ pub const Camera = struct {
         }
 
         var rec: HitRecord = undefined;
-        const ray_range = Interval.new(0, std.math.inf(f64));
+        const ray_range = Interval.new(0.001, std.math.inf(f64));
         if (world.hit(r, ray_range, &rec)) {
             const direction: Vec3 = randomOnHemesphere(rec.normal);
             return self.rayColor(Ray.new(rec.p, direction), depth - 1, world).scale(0.5);
