@@ -16,6 +16,7 @@ pub const Camera = struct {
     aspect_ratio: f64,
     image_width: i32 ,
     samples_per_pixel: i32,
+    max_depth: i32,
     
     image_height: i32,
     pixel_samples_scale: f64,
@@ -30,6 +31,7 @@ pub const Camera = struct {
             .image_width = 100,
             .image_height = undefined,
             .samples_per_pixel = 10,
+            .max_depth = 10,
             .pixel_samples_scale = undefined,
             .center = undefined,
             .pixel00_loc = undefined,
@@ -65,7 +67,7 @@ pub const Camera = struct {
                 var pixel_color = Color.new(0, 0, 0);
                 for (0..@as(usize, @intCast(self.samples_per_pixel))) |_| {
                     const r = self.getRay(@as(i32, @intCast(i)), @as(i32, @intCast(j)));
-                    pixel_color = pixel_color.add(self.rayColor(r, world));
+                    pixel_color = pixel_color.add(self.rayColor(r, self.max_depth, world));
                 }
 
                 try writeColor(stdout, pixel_color.scale(self.pixel_samples_scale));
@@ -119,12 +121,16 @@ pub const Camera = struct {
         return Vec3.new(Utility.randomDouble(&rng) - 0.5, Utility.randomDouble(&rng) - 0.5, 0);
     }
     
-    fn rayColor(self: Self, r: Ray, world: HittableList) Color {
+    fn rayColor(self: Self, r: Ray, depth: i32, world: HittableList) Color {
+        if (depth <= 0) {
+            return Color.new(0, 0, 0);
+        }
+
         var rec: HitRecord = undefined;
         const ray_range = Interval.new(0, std.math.inf(f64));
         if (world.hit(r, ray_range, &rec)) {
             const direction: Vec3 = randomOnHemesphere(rec.normal);
-            return self.rayColor(Ray.new(rec.p, direction), world).scale(0.5);
+            return self.rayColor(Ray.new(rec.p, direction), depth - 1, world).scale(0.5);
         }
         
         const unit_direction = r.getDir().unitVector();
