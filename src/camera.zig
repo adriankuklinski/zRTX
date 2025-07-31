@@ -1,6 +1,7 @@
 const std = @import("std");
 const Vec3 = @import("vec3.zig").Vec3;
 const randomOnHemesphere = @import("vec3.zig").randomOnHemisphere;
+const randomUnitVector = @import("vec3.zig").randomUnitVector;
 const Point3 = Vec3;
 const Color = Vec3;
 const Ray = @import("ray.zig").Ray;
@@ -129,8 +130,8 @@ pub const Camera = struct {
         var rec: HitRecord = undefined;
         const ray_range = Interval.new(0.001, std.math.inf(f64));
         if (world.hit(r, ray_range, &rec)) {
-            const direction: Vec3 = randomOnHemesphere(rec.normal);
-            return self.rayColor(Ray.new(rec.p, direction), depth - 1, world).scale(0.5);
+            const direction: Vec3 = rec.normal.add(randomUnitVector());
+            return self.rayColor(Ray.new(rec.p, direction), depth - 1, world).scale(0.1);
         }
         
         const unit_direction = r.getDir().unitVector();
