@@ -5,6 +5,7 @@ const Ray = @import("./ray.zig").Ray;
 const Vec3 = @import("./vec3.zig").Vec3;
 const Point3 = Vec3;
 const Interval = @import("interval.zig").Interval;
+const Material = @import("material.zig").Material;
 
 pub const HittableList = struct {
     const Self = @This();
@@ -54,7 +55,7 @@ pub const HittableList = struct {
         return hit_anything;
     }
     
-    pub fn addSphere(self: *Self, center: Point3, radius: f64) !void {
-        try self.add(Hittable.makeSphere(center, radius));
+    pub fn addSphere(self: *Self, center: Point3, radius: f64, material: Material) !void {
+        try self.add(Hittable.makeSphere(center, radius, material));
     }
 };

@@ -130,8 +130,12 @@ pub const Camera = struct {
         var rec: HitRecord = undefined;
         const ray_range = Interval.new(0.001, std.math.inf(f64));
         if (world.hit(r, ray_range, &rec)) {
-            const direction: Vec3 = rec.normal.add(randomUnitVector());
-            return self.rayColor(Ray.new(rec.p, direction), depth - 1, world).scale(0.1);
+            var scattered: Ray = undefined;
+            var attenuation: Color = undefined;
+            if (rec.material.scatter(r, rec, &attenuation, &scattered)) {
+                return attenuation.mul(self.rayColor(scattered, depth - 1, world));
+            }
+            return Color.new(0, 0, 0);
         }
         
         const unit_direction = r.getDir().unitVector();

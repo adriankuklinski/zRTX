@@ -4,12 +4,15 @@ const Point3 = Vec3;
 const Ray = @import("ray.zig").Ray;
 const Sphere = @import("sphere.zig").Sphere;
 const Interval = @import("interval.zig").Interval;
+const Material = @import("material.zig").Material;
 
 pub const HitRecord = struct {
     const Self = @This();
 
     p: Point3,
     normal: Vec3,
+    material: Material,
+
     t: f64,
     front_face: bool,
 
@@ -28,8 +31,8 @@ pub const Hittable = union(enum) {
         };
     }
     
-    pub fn makeSphere(center: Point3, radius: f64) Hittable {
-        return .{ .sphere = Sphere.init(center, radius) };
+    pub fn makeSphere(center: Point3, radius: f64, material: Material) Hittable {
+        return .{ .sphere = Sphere.init(center, radius, material) };
     }
 };
 

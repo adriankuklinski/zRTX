@@ -57,6 +57,11 @@ pub const Vec3 = struct {
     pub fn lengthSquared(self: Self) f64 {
         return self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2];
     }
+
+    pub fn nearZero(self: Self) bool {
+        const s = 1e-8;
+        return (@abs(self.e[0]) < s) and (@abs(self.e[1]) < s) and (@abs(self.e[2]) < s);
+    }
     
     pub fn length(self: Self) f64 {
         return @sqrt(self.lengthSquared());
@@ -201,6 +206,10 @@ pub fn randomOnHemisphere(normal: Vec3) Vec3 {
     } else {
         return on_unit_sphere.negate();
     }
+}
+
+pub fn reflect(v: Vec3, n: Vec3) Vec3 {
+    return v.sub(n.scale(2.0 * v.dot(n)));
 }
 
 test "Vec3 basic operations" {
